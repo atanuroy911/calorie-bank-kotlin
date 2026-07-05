@@ -22,12 +22,14 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.roy.caloriebank.ui.shared.DetailScaffold
 import com.roy.caloriebank.ui.shared.GradientButton
 import com.roy.caloriebank.ui.theme.NegativeColor
 
 @Composable
 fun ManualExerciseScreen(
     onSaved: () -> Unit,
+    onBack: () -> Unit = onSaved,
     viewModel: ManualExerciseEntryViewModel = hiltViewModel(),
 ) {
     var name by remember { mutableStateOf("") }
@@ -36,14 +38,14 @@ fun ManualExerciseScreen(
     var error by remember { mutableStateOf<String?>(null) }
     val isSaving by viewModel.isSaving.collectAsStateWithLifecycle()
 
+    DetailScaffold(title = "Log Exercise", onBack = onBack) { padding ->
     Column(
         modifier = Modifier
             .fillMaxSize()
+            .padding(padding)
             .verticalScroll(rememberScrollState())
             .padding(16.dp),
     ) {
-        Text("Log Exercise", style = MaterialTheme.typography.headlineMedium)
-        Spacer(Modifier.height(16.dp))
         OutlinedTextField(
             value = name,
             onValueChange = { name = it },
@@ -82,5 +84,6 @@ fun ManualExerciseScreen(
                 }
             },
         )
+    }
     }
 }

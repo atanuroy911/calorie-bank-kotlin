@@ -26,6 +26,7 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.roy.caloriebank.domain.util.kcalFormatted
+import com.roy.caloriebank.ui.shared.DetailScaffold
 import com.roy.caloriebank.ui.shared.GradientButton
 import com.roy.caloriebank.ui.theme.AccentGradient
 import com.roy.caloriebank.ui.theme.NegativeColor
@@ -34,6 +35,7 @@ import com.roy.caloriebank.ui.theme.TextOnPrimaryColor
 @Composable
 fun ManualBankWithdrawScreen(
     onSaved: () -> Unit,
+    onBack: () -> Unit = onSaved,
     viewModel: ManualBankWithdrawViewModel = hiltViewModel(),
 ) {
     var amount by remember { mutableStateOf("") }
@@ -42,14 +44,14 @@ fun ManualBankWithdrawScreen(
     val isSaving by viewModel.isSaving.collectAsStateWithLifecycle()
     val bankAccount by viewModel.bankAccount.collectAsStateWithLifecycle()
 
+    DetailScaffold(title = "Withdraw from Bank", onBack = onBack) { padding ->
     Column(
         modifier = Modifier
             .fillMaxSize()
+            .padding(padding)
             .verticalScroll(rememberScrollState())
             .padding(16.dp),
     ) {
-        Text("Withdraw from Bank", style = MaterialTheme.typography.headlineMedium)
-        Spacer(Modifier.height(16.dp))
         Column(
             modifier = Modifier
                 .fillMaxWidth()
@@ -97,5 +99,6 @@ fun ManualBankWithdrawScreen(
                 }
             },
         )
+    }
     }
 }

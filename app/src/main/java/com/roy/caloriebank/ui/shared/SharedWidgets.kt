@@ -4,14 +4,22 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.rounded.ArrowBack
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -22,10 +30,55 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import com.roy.caloriebank.ui.theme.AppShapes
+import com.roy.caloriebank.ui.theme.BackgroundColor
 import com.roy.caloriebank.ui.theme.PrimaryColor
 import com.roy.caloriebank.ui.theme.PrimaryGradient
+import com.roy.caloriebank.ui.theme.SurfaceElevatedColor
 import com.roy.caloriebank.ui.theme.TextMutedColor
 import com.roy.caloriebank.ui.theme.TextOnPrimaryColor
+import com.roy.caloriebank.ui.theme.TextPrimaryColor
+
+/**
+ * Standard scaffold for any screen pushed on top of the bottom-nav shell (nutrition detail,
+ * manual entry forms, profile sub-screens). Guarantees every such screen always has a visible
+ * way back, instead of relying solely on the system back gesture/button.
+ */
+@Composable
+fun DetailScaffold(
+    title: String,
+    onBack: () -> Unit,
+    modifier: Modifier = Modifier,
+    content: @Composable (PaddingValues) -> Unit,
+) {
+    Scaffold(
+        modifier = modifier.background(BackgroundColor),
+        containerColor = BackgroundColor,
+        topBar = {
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 12.dp, vertical = 8.dp),
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
+                Box(
+                    modifier = Modifier
+                        .size(40.dp)
+                        .clip(CircleShape)
+                        .background(SurfaceElevatedColor)
+                        .clickable { onBack() },
+                    contentAlignment = Alignment.Center,
+                ) {
+                    Icon(Icons.Rounded.ArrowBack, contentDescription = "Back", tint = TextPrimaryColor)
+                }
+                Text(
+                    text = title,
+                    style = MaterialTheme.typography.titleLarge,
+                    modifier = Modifier.padding(start = 16.dp),
+                )
+            }
+        },
+    ) { padding -> content(padding) }
+}
 
 @Composable
 fun GradientButton(

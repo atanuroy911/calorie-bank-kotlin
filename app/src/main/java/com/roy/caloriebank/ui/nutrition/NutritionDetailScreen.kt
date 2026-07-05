@@ -48,24 +48,26 @@ import com.roy.caloriebank.ui.theme.SurfaceColor
 import com.roy.caloriebank.ui.theme.TextOnPrimaryColor
 import com.roy.caloriebank.ui.theme.TextSecondaryColor
 import com.roy.caloriebank.ui.theme.TransFatColor
+import com.roy.caloriebank.ui.shared.DetailScaffold
 
 private data class MacroTileData(val label: String, val value: Double, val goal: Double, val color: Color, val unit: String = "g")
 
 @Composable
-fun NutritionDetailScreen(viewModel: NutritionDetailViewModel = hiltViewModel()) {
+fun NutritionDetailScreen(onBack: () -> Unit, viewModel: NutritionDetailViewModel = hiltViewModel()) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     val summary = uiState.summary
     val profile = uiState.profile
 
+    DetailScaffold(title = "Nutrition", onBack = onBack) { padding ->
     if (summary == null) {
-        Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+        Box(modifier = Modifier.fillMaxSize().padding(padding), contentAlignment = Alignment.Center) {
             Text("🥗 No food logged today", style = MaterialTheme.typography.bodyLarge)
         }
-        return
+        return@DetailScaffold
     }
 
     LazyColumn(
-        modifier = Modifier.fillMaxSize(),
+        modifier = Modifier.fillMaxSize().padding(padding),
         contentPadding = PaddingValues(16.dp),
         verticalArrangement = Arrangement.spacedBy(16.dp),
     ) {
@@ -115,6 +117,7 @@ fun NutritionDetailScreen(viewModel: NutritionDetailViewModel = hiltViewModel())
                 ),
             )
         }
+    }
     }
 }
 

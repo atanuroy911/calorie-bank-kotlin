@@ -29,6 +29,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.roy.caloriebank.ui.shared.DetailScaffold
 import com.roy.caloriebank.ui.shared.GradientButton
 import com.roy.caloriebank.ui.theme.NegativeColor
 import com.roy.caloriebank.ui.theme.PrimaryColor
@@ -46,26 +47,26 @@ private val goalOptions = listOf("weight_loss" to "Lose", "maintenance" to "Main
 @Composable
 fun EditProfileScreen(
     onSaved: () -> Unit,
+    onBack: () -> Unit = onSaved,
     viewModel: EditProfileViewModel = hiltViewModel(),
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
 
+    DetailScaffold(title = "Edit Profile", onBack = onBack) { padding ->
     if (state.isLoading) {
-        Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+        Box(modifier = Modifier.fillMaxSize().padding(padding), contentAlignment = Alignment.Center) {
             CircularProgressIndicator(color = PrimaryColor)
         }
-        return
+        return@DetailScaffold
     }
 
     Column(
         modifier = Modifier
             .fillMaxSize()
+            .padding(padding)
             .verticalScroll(rememberScrollState())
             .padding(20.dp),
     ) {
-        Text("Edit Profile", style = MaterialTheme.typography.headlineMedium)
-        Spacer(Modifier.height(20.dp))
-
         OutlinedTextField(
             value = state.name,
             onValueChange = viewModel::updateName,
@@ -132,6 +133,7 @@ fun EditProfileScreen(
             isLoading = state.isSaving,
             onClick = { viewModel.save(onSaved) },
         )
+    }
     }
 }
 

@@ -64,8 +64,16 @@ fun IntroScreen(
                 verticalArrangement = Arrangement.Center,
                 horizontalAlignment = Alignment.CenterHorizontally,
             ) {
-                Text(item.emoji, style = MaterialTheme.typography.displayLarge)
-                androidx.compose.foundation.layout.Spacer(Modifier.height(24.dp))
+                Box(
+                    modifier = Modifier
+                        .size(148.dp)
+                        .clip(CircleShape)
+                        .background(item.color.copy(alpha = 0.14f)),
+                    contentAlignment = Alignment.Center,
+                ) {
+                    Text(item.emoji, style = MaterialTheme.typography.displayLarge)
+                }
+                androidx.compose.foundation.layout.Spacer(Modifier.height(32.dp))
                 Text(
                     item.title,
                     style = MaterialTheme.typography.headlineMedium,

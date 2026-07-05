@@ -68,9 +68,17 @@ fun HomeScreen(
     val greeting by viewModel.greeting.collectAsStateWithLifecycle()
 
     Scaffold(
-        floatingActionButton = {
-            ExtendedFloatingActionButton(onClick = onOpenManualLog) {
-                Text("Manual Log")
+        // A docked bottom bar (rather than a floating FAB) so Scaffold's content padding always
+        // reserves space for it — a floating FAB does not affect content padding and would overlap
+        // the last list item whenever the screen's content is shorter than the viewport.
+        bottomBar = {
+            androidx.compose.material3.Surface(color = com.roy.caloriebank.ui.theme.BackgroundColor) {
+                ExtendedFloatingActionButton(
+                    onClick = onOpenManualLog,
+                    modifier = Modifier.padding(16.dp).fillMaxWidth(),
+                ) {
+                    Text("Manual Log")
+                }
             }
         },
     ) { padding ->
@@ -103,6 +111,10 @@ fun HomeScreen(
                         Icon(Icons.Rounded.Person, contentDescription = "Profile", tint = androidx.compose.ui.graphics.Color.White)
                     }
                 }
+            }
+
+            if (uiState.currentStreak > 0) {
+                item { StreakChip(uiState.currentStreak) }
             }
 
             uiState.summary?.let { summary ->
@@ -174,6 +186,25 @@ fun HomeScreen(
 
             item { Spacer(Modifier.height(72.dp)) }
         }
+    }
+}
+
+@Composable
+private fun StreakChip(streak: Int) {
+    Row(
+        modifier = Modifier
+            .clip(RoundedCornerShape(20.dp))
+            .background(com.roy.caloriebank.ui.theme.WarningColor.copy(alpha = 0.16f))
+            .padding(horizontal = 14.dp, vertical = 8.dp),
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        Text("🔥", style = MaterialTheme.typography.titleMedium)
+        Text(
+            "$streak day${if (streak == 1) "" else "s"} under budget",
+            style = MaterialTheme.typography.labelLarge,
+            color = com.roy.caloriebank.ui.theme.WarningColor,
+            modifier = Modifier.padding(start = 8.dp),
+        )
     }
 }
 

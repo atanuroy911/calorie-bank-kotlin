@@ -25,6 +25,8 @@ data class ProfileUiState(
     val profile: UserProfile? = null,
     val bankAccount: BankAccount? = null,
     val summary: DailySummary? = null,
+    val currentStreak: Int = 0,
+    val longestStreak: Int = 0,
 )
 
 @HiltViewModel
@@ -42,8 +44,16 @@ class ProfileViewModel @Inject constructor(
             userProfileRepository.watchProfile(userId),
             bankRepository.watchBankAccount(userId),
             dailySummaryRepository.watchSummaryForDate(userId, now),
-        ) { profile, bank, summary ->
-            ProfileUiState(profile = profile, bankAccount = bank, summary = summary)
+            preferencesRepository.currentStreak,
+            preferencesRepository.longestStreak,
+        ) { profile, bank, summary, currentStreak, longestStreak ->
+            ProfileUiState(
+                profile = profile,
+                bankAccount = bank,
+                summary = summary,
+                currentStreak = currentStreak,
+                longestStreak = longestStreak,
+            )
         }
     }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), ProfileUiState())
 

@@ -158,21 +158,20 @@ fun CalorieBankNavHost(navController: NavHostController = rememberNavController(
         }
 
         composable(Routes.HOME) { AppShell(navController) }
-        composable(Routes.CHAT) { AppShell(navController) }
-        composable(Routes.TRANSACTIONS) { AppShell(navController) }
-        composable(Routes.BANK) { AppShell(navController) }
-        composable(Routes.PROFILE) { AppShell(navController) }
 
         composable(Routes.PROFILE_EDIT) {
             EditProfileScreen(onSaved = { navController.popBackStack() })
         }
         composable(Routes.PROFILE_SETTINGS) {
-            SettingsScreen(onAiProviderSettings = { navController.navigate(Routes.PROFILE_AI_SETTINGS) })
+            SettingsScreen(
+                onAiProviderSettings = { navController.navigate(Routes.PROFILE_AI_SETTINGS) },
+                onBack = { navController.popBackStack() },
+            )
         }
-        composable(Routes.PROFILE_AI_SETTINGS) { AiProviderSettingsScreen() }
-        composable(Routes.PROFILE_PREMIUM) { PremiumScreen() }
+        composable(Routes.PROFILE_AI_SETTINGS) { AiProviderSettingsScreen(onBack = { navController.popBackStack() }) }
+        composable(Routes.PROFILE_PREMIUM) { PremiumScreen(onBack = { navController.popBackStack() }) }
 
-        composable(Routes.NUTRITION) { NutritionDetailScreen() }
+        composable(Routes.NUTRITION) { NutritionDetailScreen(onBack = { navController.popBackStack() }) }
 
         composable(Routes.MANUAL_FOOD) {
             ManualFoodScreen(onSaved = { navController.popBackStack() })
@@ -194,6 +193,21 @@ fun CalorieBankNavHost(navController: NavHostController = rememberNavController(
 private fun AppShell(rootNavController: NavHostController) {
     val shellNavController = rememberNavController()
 
+    // Any jump between shell tabs — whether from the bottom nav bar or an in-page shortcut like
+    // the Home screen's profile avatar or "Log with CalBot" banner — must use this exact
+    // popUpTo/launchSingleTop/restoreState pattern. A bare navigate(route) instead pushes a
+    // duplicate back-stack entry for that tab; the bottom nav's own popUpTo(start) then only pops
+    // that duplicate, leaving the tab looking selected but the Home tab unreachable/stuck.
+    fun navigateToTab(route: String) {
+        shellNavController.navigate(route) {
+            popUpTo(shellNavController.graph.findStartDestination().id) {
+                saveState = true
+            }
+            launchSingleTop = true
+            restoreState = true
+        }
+    }
+
     Scaffold(
         bottomBar = {
             val backStackEntry by shellNavController.currentBackStackEntryAsState()
@@ -203,15 +217,7 @@ private fun AppShell(rootNavController: NavHostController) {
                     val selected = currentRoute == tab.route
                     NavigationBarItem(
                         selected = selected,
-                        onClick = {
-                            shellNavController.navigate(tab.route) {
-                                popUpTo(shellNavController.graph.findStartDestination().id) {
-                                    saveState = true
-                                }
-                                launchSingleTop = true
-                                restoreState = true
-                            }
-                        },
+                        onClick = { navigateToTab(tab.route) },
                         icon = { Icon(tab.icon, contentDescription = tab.label) },
                         label = { Text(tab.label) },
                         colors = NavigationBarItemDefaults.colors(
@@ -233,10 +239,10 @@ private fun AppShell(rootNavController: NavHostController) {
         ) {
             composable(Routes.HOME) {
                 HomeScreen(
-                    onOpenChat = { shellNavController.navigate(Routes.CHAT) },
+                    onOpenChat = { navigateToTab(Routes.CHAT) },
                     onOpenNutrition = { rootNavController.navigate(Routes.NUTRITION) },
-                    onOpenProfile = { shellNavController.navigate(Routes.PROFILE) },
-                    onOpenTransactions = { shellNavController.navigate(Routes.TRANSACTIONS) },
+                    onOpenProfile = { navigateToTab(Routes.PROFILE) },
+                    onOpenTransactions = { navigateToTab(Routes.TRANSACTIONS) },
                     onOpenManualLog = { rootNavController.navigate(Routes.MANUAL_FOOD) },
                 )
             }

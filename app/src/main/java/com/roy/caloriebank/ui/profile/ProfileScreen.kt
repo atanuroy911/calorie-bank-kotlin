@@ -31,8 +31,10 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -100,6 +102,10 @@ fun ProfileScreen(
         }
 
         item {
+            BadgesCard(currentStreak = uiState.currentStreak, longestStreak = uiState.longestStreak, bankBalance = uiState.bankAccount?.balance ?: 0)
+        }
+
+        item {
             MenuItem(Icons.Rounded.Edit, "Edit Profile", onClick = onEditProfile)
         }
         item {
@@ -119,6 +125,69 @@ fun ProfileScreen(
                 onClick = { viewModel.signOut(onSignedOut) },
             )
         }
+    }
+}
+
+private data class Badge(val emoji: String, val label: String, val unlocked: Boolean)
+
+@Composable
+private fun BadgesCard(currentStreak: Int, longestStreak: Int, bankBalance: Int) {
+    val badges = listOf(
+        Badge("🔥", "3-Day Streak", longestStreak >= 3),
+        Badge("⚡", "7-Day Streak", longestStreak >= 7),
+        Badge("🏆", "30-Day Streak", longestStreak >= 30),
+        Badge("🐷", "1000 kcal Saved", bankBalance >= 1000),
+        Badge("💎", "5000 kcal Saved", bankBalance >= 5000),
+        Badge("👑", "10000 kcal Saved", bankBalance >= 10000),
+    )
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clip(RoundedCornerShape(16.dp))
+            .background(SurfaceColor)
+            .padding(16.dp),
+    ) {
+        Row(horizontalArrangement = Arrangement.SpaceBetween, modifier = Modifier.fillMaxWidth()) {
+            Text("Badges", style = MaterialTheme.typography.titleMedium)
+            if (currentStreak > 0) {
+                Text("🔥 $currentStreak day streak", style = MaterialTheme.typography.labelMedium, color = PrimaryColor)
+            }
+        }
+        Spacer(Modifier.height(12.dp))
+        Row(
+            horizontalArrangement = Arrangement.spacedBy(12.dp),
+            modifier = Modifier.fillMaxWidth(),
+        ) {
+            badges.take(3).forEach { BadgeTile(it, Modifier.weight(1f)) }
+        }
+        Spacer(Modifier.height(12.dp))
+        Row(
+            horizontalArrangement = Arrangement.spacedBy(12.dp),
+            modifier = Modifier.fillMaxWidth(),
+        ) {
+            badges.drop(3).forEach { BadgeTile(it, Modifier.weight(1f)) }
+        }
+    }
+}
+
+@Composable
+private fun BadgeTile(badge: Badge, modifier: Modifier = Modifier) {
+    Column(
+        modifier = modifier
+            .clip(RoundedCornerShape(12.dp))
+            .background(if (badge.unlocked) PrimaryColor.copy(alpha = 0.14f) else MaterialTheme.colorScheme.background)
+            .padding(vertical = 12.dp)
+            .then(if (badge.unlocked) Modifier else Modifier.alpha(0.35f)),
+        horizontalAlignment = Alignment.CenterHorizontally,
+    ) {
+        Text(badge.emoji, style = MaterialTheme.typography.headlineSmall)
+        Spacer(Modifier.height(4.dp))
+        Text(
+            badge.label,
+            style = MaterialTheme.typography.labelSmall,
+            color = if (badge.unlocked) MaterialTheme.colorScheme.onSurface else TextSecondaryColor,
+            textAlign = TextAlign.Center,
+        )
     }
 }
 

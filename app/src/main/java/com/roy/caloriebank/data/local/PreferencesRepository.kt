@@ -29,6 +29,22 @@ class PreferencesRepository @Inject constructor(
         val AI_USAGE_TODAY = intPreferencesKey("ai_usage_today")
         val AI_USAGE_DATE = stringPreferencesKey("ai_usage_date")
         val NOTIFICATIONS_ENABLED = booleanPreferencesKey("notifications_enabled")
+        val CURRENT_STREAK = intPreferencesKey("current_streak")
+        val LONGEST_STREAK = intPreferencesKey("longest_streak")
+    }
+
+    val currentStreak: Flow<Int> = dataStore.data.map { it[Keys.CURRENT_STREAK] ?: 0 }
+    val longestStreak: Flow<Int> = dataStore.data.map { it[Keys.LONGEST_STREAK] ?: 0 }
+
+    /** Bumps the streak after a day closes under budget, or resets it to 0 otherwise. */
+    suspend fun recordDayResult(stayedUnderBudget: Boolean) {
+        val prefs = dataStore.data.first()
+        val newStreak = if (stayedUnderBudget) (prefs[Keys.CURRENT_STREAK] ?: 0) + 1 else 0
+        val longest = maxOf(prefs[Keys.LONGEST_STREAK] ?: 0, newStreak)
+        dataStore.edit {
+            it[Keys.CURRENT_STREAK] = newStreak
+            it[Keys.LONGEST_STREAK] = longest
+        }
     }
 
     val notificationsEnabled: Flow<Boolean> =

@@ -38,6 +38,7 @@ data class HomeUiState(
     val todaysFoodEntries: List<FoodEntry> = emptyList(),
     val todaysTransactions: List<CalorieTransaction> = emptyList(),
     val isLoading: Boolean = true,
+    val currentStreak: Int = 0,
 )
 
 @HiltViewModel
@@ -63,15 +64,17 @@ class HomeViewModel @Inject constructor(
             bankRepository.watchBankAccount(userId),
             foodLogRepository.watchEntriesForDate(userId, now),
             transactionRepository.watchTransactionsForDate(userId, now),
-        ) { profile, summary, bank, foods, txs ->
+            preferencesRepository.currentStreak,
+        ) { flows ->
             HomeUiState(
                 userId = userId,
-                profile = profile,
-                summary = summary,
-                bankAccount = bank,
-                todaysFoodEntries = foods,
-                todaysTransactions = txs,
+                profile = flows[0] as UserProfile?,
+                summary = flows[1] as DailySummary?,
+                bankAccount = flows[2] as BankAccount?,
+                todaysFoodEntries = flows[3] as List<FoodEntry>,
+                todaysTransactions = flows[4] as List<CalorieTransaction>,
                 isLoading = false,
+                currentStreak = flows[5] as Int,
             )
         }
     }.stateIn(
@@ -113,6 +116,7 @@ class HomeViewModel @Inject constructor(
                         bankRepository.deposit(userId, remaining, "Daily Savings — $month ${zoned.dayOfMonth}")
                     }
                     dailySummaryRepository.updateSummary(yesterdaySummary.copy(endOfDayProcessed = true))
+                    preferencesRepository.recordDayResult(stayedUnderBudget = !yesterdaySummary.isOverBudget)
                 }
             }
         }

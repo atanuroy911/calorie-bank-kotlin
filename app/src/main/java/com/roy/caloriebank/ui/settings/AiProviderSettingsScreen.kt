@@ -29,6 +29,7 @@ import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.roy.caloriebank.ui.shared.DetailScaffold
 import com.roy.caloriebank.ui.shared.GradientButton
 import com.roy.caloriebank.ui.theme.PositiveColor
 import com.roy.caloriebank.ui.theme.PrimaryColor
@@ -38,19 +39,19 @@ import com.roy.caloriebank.ui.theme.TextSecondaryColor
 
 @Composable
 fun AiProviderSettingsScreen(
+    onBack: () -> Unit,
     viewModel: AiProviderSettingsViewModel = hiltViewModel(),
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
 
+    DetailScaffold(title = "AI Provider Settings", onBack = onBack) { padding ->
     Column(
         modifier = Modifier
             .fillMaxSize()
+            .padding(padding)
             .verticalScroll(rememberScrollState())
             .padding(20.dp),
     ) {
-        Text("AI Provider Settings", style = MaterialTheme.typography.headlineMedium)
-        Spacer(Modifier.height(20.dp))
-
         // Section 1: Your Backend Server
         Column(
             modifier = Modifier
@@ -146,5 +147,6 @@ fun AiProviderSettingsScreen(
             gradient = if (state.saved) androidx.compose.ui.graphics.Brush.linearGradient(listOf(PositiveColor, PositiveColor)) else com.roy.caloriebank.ui.theme.PrimaryGradient,
             onClick = { viewModel.save() },
         )
+    }
     }
 }

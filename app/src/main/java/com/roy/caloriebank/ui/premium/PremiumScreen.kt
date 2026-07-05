@@ -32,6 +32,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import com.roy.caloriebank.ui.shared.DetailScaffold
 import com.roy.caloriebank.ui.shared.GradientButton
 import com.roy.caloriebank.ui.theme.AccentGradient
 import com.roy.caloriebank.ui.theme.SurfaceColor
@@ -50,11 +51,12 @@ private val features = listOf(
 )
 
 @Composable
-fun PremiumScreen() {
+fun PremiumScreen(onBack: () -> Unit) {
     val snackbarHostState = remember { SnackbarHostState() }
     val scope = rememberCoroutineScope()
 
-    Column(modifier = Modifier.fillMaxSize()) {
+    DetailScaffold(title = "Premium", onBack = onBack) { padding ->
+    Column(modifier = Modifier.fillMaxSize().padding(padding)) {
         Column(
             modifier = Modifier
                 .fillMaxSize()
@@ -119,5 +121,6 @@ fun PremiumScreen() {
             )
         }
         SnackbarHost(hostState = snackbarHostState)
+    }
     }
 }
