@@ -19,11 +19,13 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.AccountBalance
+import androidx.compose.material.icons.rounded.Add
 import androidx.compose.material.icons.rounded.AutoAwesome
+import androidx.compose.material.icons.rounded.DirectionsWalk
+import androidx.compose.material.icons.rounded.LocalFireDepartment
 import androidx.compose.material.icons.rounded.Person
 import androidx.compose.material.icons.rounded.Restaurant
 import androidx.compose.material.icons.rounded.Warning
-import androidx.compose.material3.ExtendedFloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
@@ -54,6 +56,7 @@ import com.roy.caloriebank.ui.theme.PositiveColor
 import com.roy.caloriebank.ui.theme.PrimaryColor
 import com.roy.caloriebank.ui.theme.TextMutedColor
 import com.roy.caloriebank.ui.theme.TextSecondaryColor
+import com.roy.caloriebank.ui.settings.HealthConnectViewModel
 
 @Composable
 fun HomeScreen(
@@ -63,28 +66,24 @@ fun HomeScreen(
     onOpenTransactions: () -> Unit,
     onOpenManualLog: () -> Unit,
     viewModel: HomeViewModel = hiltViewModel(),
+    healthConnectViewModel: HealthConnectViewModel = hiltViewModel(),
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     val greeting by viewModel.greeting.collectAsStateWithLifecycle()
+    val healthState by healthConnectViewModel.uiState.collectAsStateWithLifecycle()
 
     Scaffold(
-        // A docked bottom bar (rather than a floating FAB) so Scaffold's content padding always
-        // reserves space for it — a floating FAB does not affect content padding and would overlap
-        // the last list item whenever the screen's content is shorter than the viewport.
-        bottomBar = {
-            androidx.compose.material3.Surface(color = com.roy.caloriebank.ui.theme.BackgroundColor) {
-                ExtendedFloatingActionButton(
-                    onClick = onOpenManualLog,
-                    modifier = Modifier.padding(16.dp).fillMaxWidth(),
-                ) {
-                    Text("Manual Log")
-                }
+        floatingActionButton = {
+            androidx.compose.material3.FloatingActionButton(onClick = onOpenManualLog) {
+                Icon(Icons.Rounded.Add, contentDescription = "Manual Log")
             }
         },
     ) { padding ->
         LazyColumn(
             modifier = Modifier.fillMaxSize().padding(padding),
-            contentPadding = PaddingValues(16.dp),
+            // Generous bottom padding so the floating button never sits over the last list item
+            // even when today's content is short (see the FAB-overlap fix from earlier).
+            contentPadding = PaddingValues(start = 16.dp, end = 16.dp, top = 16.dp, bottom = 96.dp),
             verticalArrangement = Arrangement.spacedBy(16.dp),
         ) {
             item {
@@ -115,6 +114,10 @@ fun HomeScreen(
 
             if (uiState.currentStreak > 0) {
                 item { StreakChip(uiState.currentStreak) }
+            }
+
+            if (healthState.isLinked) {
+                item { HealthConnectRow(steps = healthState.steps, activeCalories = healthState.activeCalories) }
             }
 
             uiState.summary?.let { summary ->
@@ -205,6 +208,27 @@ private fun StreakChip(streak: Int) {
             color = com.roy.caloriebank.ui.theme.WarningColor,
             modifier = Modifier.padding(start = 8.dp),
         )
+    }
+}
+
+@Composable
+private fun HealthConnectRow(steps: Long, activeCalories: Int) {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clip(RoundedCornerShape(16.dp))
+            .background(MaterialTheme.colorScheme.surfaceVariant)
+            .padding(14.dp),
+        horizontalArrangement = Arrangement.SpaceEvenly,
+    ) {
+        Row(verticalAlignment = Alignment.CenterVertically) {
+            Icon(Icons.Rounded.DirectionsWalk, contentDescription = null, tint = PrimaryColor)
+            Text("$steps steps", style = MaterialTheme.typography.bodyMedium, modifier = Modifier.padding(start = 8.dp))
+        }
+        Row(verticalAlignment = Alignment.CenterVertically) {
+            Icon(Icons.Rounded.LocalFireDepartment, contentDescription = null, tint = PrimaryColor)
+            Text("$activeCalories kcal active", style = MaterialTheme.typography.bodyMedium, modifier = Modifier.padding(start = 8.dp))
+        }
     }
 }
 

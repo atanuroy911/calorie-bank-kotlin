@@ -3,6 +3,7 @@ package com.roy.caloriebank.ui.navigation
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.AccountBalance
 import androidx.compose.material.icons.rounded.AutoAwesome
@@ -235,7 +236,10 @@ private fun AppShell(rootNavController: NavHostController) {
         NavHost(
             navController = shellNavController,
             startDestination = Routes.HOME,
-            modifier = Modifier.padding(padding),
+            // AppShell has no topBar (each tab draws its own in-content header instead), so
+            // Scaffold's `padding` here only reserves space for the bottomBar — the status bar
+            // inset is never claimed, letting tab content draw underneath it. Claim it explicitly.
+            modifier = Modifier.padding(padding).statusBarsPadding(),
         ) {
             composable(Routes.HOME) {
                 HomeScreen(

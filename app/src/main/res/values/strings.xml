@@ -1,3 +1,5 @@
 <resources>
     <string name="app_name">Calorie Bank</string>
+    <string name="widget_balance_description">Today\'s calorie budget, consumed, and remaining</string>
+    <string name="widget_bank_streak_description">Calorie bank balance and your under-budget streak</string>
 </resources>

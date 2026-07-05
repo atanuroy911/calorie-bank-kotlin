@@ -31,6 +31,28 @@ class PreferencesRepository @Inject constructor(
         val NOTIFICATIONS_ENABLED = booleanPreferencesKey("notifications_enabled")
         val CURRENT_STREAK = intPreferencesKey("current_streak")
         val LONGEST_STREAK = intPreferencesKey("longest_streak")
+        val THEME_MODE = stringPreferencesKey("theme_mode")
+        val USE_DYNAMIC_COLOR = booleanPreferencesKey("use_dynamic_color")
+        val HEALTH_CONNECT_LINKED = booleanPreferencesKey("health_connect_linked")
+    }
+
+    /** "light" | "dark" | "system" (default). */
+    val themeMode: Flow<String> = dataStore.data.map { it[Keys.THEME_MODE] ?: "system" }
+    suspend fun setThemeMode(value: String) {
+        dataStore.edit { it[Keys.THEME_MODE] = value }
+    }
+
+    // Off by default: our hand-tuned brand palette is the intended look: a wallpaper-derived
+    // Material You scheme is opt-in, not the default, so the app doesn't ship looking different
+    // per-device out of the box.
+    val useDynamicColor: Flow<Boolean> = dataStore.data.map { it[Keys.USE_DYNAMIC_COLOR] ?: false }
+    suspend fun setUseDynamicColor(value: Boolean) {
+        dataStore.edit { it[Keys.USE_DYNAMIC_COLOR] = value }
+    }
+
+    val healthConnectLinked: Flow<Boolean> = dataStore.data.map { it[Keys.HEALTH_CONNECT_LINKED] ?: false }
+    suspend fun setHealthConnectLinked(value: Boolean) {
+        dataStore.edit { it[Keys.HEALTH_CONNECT_LINKED] = value }
     }
 
     val currentStreak: Flow<Int> = dataStore.data.map { it[Keys.CURRENT_STREAK] ?: 0 }

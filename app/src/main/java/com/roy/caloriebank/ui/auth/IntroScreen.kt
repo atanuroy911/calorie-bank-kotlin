@@ -34,17 +34,16 @@ import kotlinx.coroutines.launch
 
 private data class IntroPage(val emoji: String, val title: String, val subtitle: String, val color: androidx.compose.ui.graphics.Color)
 
-private val introPages = listOf(
-    IntroPage("🏦", "Welcome to Calorie Bank", "Manage your calories just like money in a bank account.", PrimaryColor),
-    IntroPage("💰", "Save for later", "Eat less today, save the surplus to spend on a weekend feast.", AccentColor),
-    IntroPage("🤖", "Log with AI", "Just tell CalBot what you ate. No more searching for items.", ProteinColor),
-)
-
 @Composable
 fun IntroScreen(
     onFinished: () -> Unit,
     viewModel: AuthViewModel = hiltViewModel(),
 ) {
+    val introPages = listOf(
+        IntroPage("🏦", "Welcome to Calorie Bank", "Manage your calories just like money in a bank account.", PrimaryColor),
+        IntroPage("💰", "Save for later", "Eat less today, save the surplus to spend on a weekend feast.", AccentColor),
+        IntroPage("🤖", "Log with AI", "Just tell CalBot what you ate. No more searching for items.", ProteinColor),
+    )
     val pagerState = rememberPagerState(pageCount = { introPages.size })
     val scope = rememberCoroutineScopeCompat()
 
