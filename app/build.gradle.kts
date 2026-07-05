@@ -6,12 +6,21 @@ plugins {
     alias(libs.plugins.kotlin.serialization)
 }
 
+// The google-services plugin hard-fails the build if app/google-services.json is missing, so it
+// is only applied once that file exists. Firebase AI Logic (CalBot's default AI backend) is
+// unavailable until then, but the app still builds and BYOK/custom-backend chat still works.
+// See README / AI setup notes for how to add your own Firebase project's google-services.json.
+val hasGoogleServicesConfig = file("google-services.json").exists()
+if (hasGoogleServicesConfig) {
+    apply(plugin = "com.google.gms.google-services")
+}
+
 // Single source of truth for the app's semantic version (semver.org: MAJOR.MINOR.PATCH).
 // Bump MAJOR for breaking/incompatible changes, MINOR for backward-compatible features,
 // PATCH for backward-compatible fixes. versionCode is derived so every semver bump also
 // produces a strictly increasing Play Store version code.
 val appVersionMajor = 1
-val appVersionMinor = 1
+val appVersionMinor = 2
 val appVersionPatch = 0
 val appVersionName = "$appVersionMajor.$appVersionMinor.$appVersionPatch"
 val appVersionCode = appVersionMajor * 10_000 + appVersionMinor * 100 + appVersionPatch
@@ -79,6 +88,9 @@ dependencies {
     implementation(libs.androidx.health.connect.client)
     implementation(libs.androidx.glance.appwidget)
     implementation(libs.androidx.glance.material3)
+
+    implementation(platform(libs.firebase.bom))
+    implementation(libs.firebase.ai)
 
     testImplementation(libs.junit)
     androidTestImplementation(platform(libs.androidx.compose.bom))

@@ -67,8 +67,9 @@ fun AiProviderSettingsScreen(
             .verticalScroll(rememberScrollState())
             .padding(20.dp),
     ) {
-        // Explains the BYOK (bring-your-own-key) model up front — without this, "why do I need to
-        // paste in an API key?" is a confusing first impression for a calorie-tracking app.
+        // Explains both AI paths up front: CalBot works out of the box via Firebase AI Logic, and
+        // BYOK below is an optional override — without this, "why do I need to paste in an API
+        // key?" is a confusing first impression for a calorie-tracking app.
         Row(
             modifier = Modifier
                 .fillMaxWidth()
@@ -78,12 +79,13 @@ fun AiProviderSettingsScreen(
         ) {
             Icon(Icons.Rounded.Shield, contentDescription = null, tint = AccentColor)
             Column(modifier = Modifier.padding(start = 12.dp)) {
-                Text("You bring your own AI key", style = MaterialTheme.typography.titleSmall, color = AccentColor)
+                Text("CalBot works out of the box", style = MaterialTheme.typography.titleSmall, color = AccentColor)
                 Spacer(Modifier.height(4.dp))
                 Text(
-                    "CalBot connects directly to a provider you choose using your own API key, billed to " +
-                        "your own account with that provider. Your key is stored only on this device and is " +
-                        "never sent to us.",
+                    "By default CalBot runs on this app's own AI backend (Firebase AI Logic) — nothing to " +
+                        "set up. Prefer to use your own AI account instead? Bring your own key below, or point " +
+                        "at a custom backend server; either overrides the default and your key never leaves " +
+                        "this device.",
                     style = MaterialTheme.typography.bodySmall,
                     color = TextSecondaryColor,
                 )
