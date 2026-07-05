@@ -16,7 +16,13 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.rounded.DirectionsRun
+import androidx.compose.material.icons.rounded.Flag
+import androidx.compose.material.icons.rounded.MonitorWeight
+import androidx.compose.material.icons.rounded.Person
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Slider
@@ -31,9 +37,12 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.roy.caloriebank.ui.shared.DetailScaffold
 import com.roy.caloriebank.ui.shared.GradientButton
+import com.roy.caloriebank.ui.shared.SectionCard
+import com.roy.caloriebank.ui.theme.AccentGradient
 import com.roy.caloriebank.ui.theme.NegativeColor
 import com.roy.caloriebank.ui.theme.PrimaryColor
 import com.roy.caloriebank.ui.theme.SurfaceColor
+import com.roy.caloriebank.ui.theme.SurfaceElevatedColor
 import com.roy.caloriebank.ui.theme.TextOnPrimaryColor
 import com.roy.caloriebank.ui.theme.TextSecondaryColor
 import kotlin.math.roundToInt
@@ -42,7 +51,9 @@ private val activityLevels = listOf(
     "sedentary" to "Sedentary", "light" to "Light", "moderate" to "Moderate",
     "active" to "Active", "very_active" to "Very Active",
 )
-private val goalOptions = listOf("weight_loss" to "Lose", "maintenance" to "Maintain", "weight_gain" to "Gain")
+private val goalOptions = listOf(
+    "weight_loss" to ("🔥" to "Lose"), "maintenance" to ("⚖️" to "Maintain"), "weight_gain" to ("💪" to "Gain"),
+)
 
 @Composable
 fun EditProfileScreen(
@@ -66,73 +77,96 @@ fun EditProfileScreen(
             .padding(padding)
             .verticalScroll(rememberScrollState())
             .padding(20.dp),
+        verticalArrangement = Arrangement.spacedBy(16.dp),
     ) {
-        OutlinedTextField(
-            value = state.name,
-            onValueChange = viewModel::updateName,
-            label = { Text("Full Name") },
-            modifier = Modifier.fillMaxWidth(),
-        )
-        Spacer(Modifier.height(16.dp))
-
-        Text("Age", style = MaterialTheme.typography.titleMedium)
-        Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(16.dp)) {
-            Stepper("-") { viewModel.updateAge(state.age - 1) }
-            Text("${state.age}", style = MaterialTheme.typography.headlineSmall)
-            Stepper("+") { viewModel.updateAge(state.age + 1) }
-        }
-        Spacer(Modifier.height(16.dp))
-
-        Text("Gender", style = MaterialTheme.typography.titleMedium)
-        Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-            listOf("male", "female", "other").forEach { g ->
-                Pill(g.replaceFirstChar { it.uppercase() }, state.gender == g) { viewModel.updateGender(g) }
-            }
-        }
-        Spacer(Modifier.height(20.dp))
-
-        LabeledSlider("Height", state.heightCm, 140.0..220.0, "cm") { viewModel.updateHeight(it) }
-        Spacer(Modifier.height(16.dp))
-        LabeledSlider("Current Weight", state.currentWeightKg, 40.0..200.0, "kg") { viewModel.updateCurrentWeight(it) }
-        Spacer(Modifier.height(16.dp))
-        LabeledSlider("Goal Weight", state.goalWeightKg, 40.0..200.0, "kg") { viewModel.updateGoalWeight(it) }
-        Spacer(Modifier.height(20.dp))
-
-        Text("Goal", style = MaterialTheme.typography.titleMedium)
-        Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-            goalOptions.forEach { (value, label) ->
-                Pill(label, state.goal == value) { viewModel.updateGoal(value) }
-            }
-        }
-        Spacer(Modifier.height(16.dp))
-
-        Text("Activity Level", style = MaterialTheme.typography.titleMedium)
-        activityLevels.forEach { (value, label) ->
-            val selected = state.activityLevel == value
-            Row(
+        // Avatar + name
+        Column(horizontalAlignment = Alignment.CenterHorizontally, modifier = Modifier.fillMaxWidth()) {
+            Box(
                 modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(vertical = 4.dp)
-                    .clip(RoundedCornerShape(12.dp))
-                    .background(if (selected) PrimaryColor.copy(alpha = 0.2f) else SurfaceColor)
-                    .clickable { viewModel.updateActivityLevel(value) }
-                    .padding(12.dp),
+                    .size(80.dp)
+                    .clip(CircleShape)
+                    .background(AccentGradient),
+                contentAlignment = Alignment.Center,
             ) {
-                Text(label)
+                Icon(Icons.Rounded.Person, contentDescription = null, tint = TextOnPrimaryColor, modifier = Modifier.size(40.dp))
+            }
+            Spacer(Modifier.height(16.dp))
+            OutlinedTextField(
+                value = state.name,
+                onValueChange = viewModel::updateName,
+                label = { Text("Full Name") },
+                modifier = Modifier.fillMaxWidth(),
+            )
+        }
+
+        SectionCard(title = "Personal Info", icon = Icons.Rounded.Person) {
+            Text("Age", style = MaterialTheme.typography.titleSmall, color = TextSecondaryColor)
+            Spacer(Modifier.height(8.dp))
+            Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(16.dp)) {
+                Stepper("-") { viewModel.updateAge(state.age - 1) }
+                Text("${state.age}", style = MaterialTheme.typography.headlineSmall)
+                Stepper("+") { viewModel.updateAge(state.age + 1) }
+            }
+            Spacer(Modifier.height(16.dp))
+            Text("Gender", style = MaterialTheme.typography.titleSmall, color = TextSecondaryColor)
+            Spacer(Modifier.height(8.dp))
+            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                listOf("male", "female", "other").forEach { g ->
+                    Pill(g.replaceFirstChar { it.uppercase() }, state.gender == g) { viewModel.updateGender(g) }
+                }
+            }
+        }
+
+        SectionCard(title = "Body Metrics", icon = Icons.Rounded.MonitorWeight) {
+            LabeledSlider("Height", state.heightCm, 140.0..220.0, "cm") { viewModel.updateHeight(it) }
+            Spacer(Modifier.height(16.dp))
+            LabeledSlider("Current Weight", state.currentWeightKg, 40.0..200.0, "kg") { viewModel.updateCurrentWeight(it) }
+            Spacer(Modifier.height(16.dp))
+            LabeledSlider("Goal Weight", state.goalWeightKg, 40.0..200.0, "kg") { viewModel.updateGoalWeight(it) }
+        }
+
+        SectionCard(title = "Goal", icon = Icons.Rounded.Flag) {
+            Row(horizontalArrangement = Arrangement.spacedBy(8.dp), modifier = Modifier.fillMaxWidth()) {
+                goalOptions.forEach { (value, pair) ->
+                    val (emoji, label) = pair
+                    GoalCard(
+                        emoji = emoji,
+                        label = label,
+                        selected = state.goal == value,
+                        onClick = { viewModel.updateGoal(value) },
+                        modifier = Modifier.weight(1f),
+                    )
+                }
+            }
+        }
+
+        SectionCard(title = "Activity Level", icon = Icons.Rounded.DirectionsRun) {
+            activityLevels.forEach { (value, label) ->
+                val selected = state.activityLevel == value
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(vertical = 4.dp)
+                        .clip(RoundedCornerShape(12.dp))
+                        .background(if (selected) PrimaryColor.copy(alpha = 0.16f) else SurfaceElevatedColor)
+                        .clickable { viewModel.updateActivityLevel(value) }
+                        .padding(12.dp),
+                ) {
+                    Text(label, color = if (selected) PrimaryColor else MaterialTheme.colorScheme.onSurface)
+                }
             }
         }
 
         state.error?.let {
-            Spacer(Modifier.height(8.dp))
             Text(it, color = NegativeColor, style = MaterialTheme.typography.bodySmall)
         }
 
-        Spacer(Modifier.height(24.dp))
         GradientButton(
             text = "Save Changes",
             isLoading = state.isSaving,
             onClick = { viewModel.save(onSaved) },
         )
+        Spacer(Modifier.height(8.dp))
     }
     }
 }
@@ -143,7 +177,7 @@ private fun Stepper(label: String, onClick: () -> Unit) {
         modifier = Modifier
             .size(36.dp)
             .clip(CircleShape)
-            .background(SurfaceColor)
+            .background(SurfaceElevatedColor)
             .clickable { onClick() },
         contentAlignment = Alignment.Center,
     ) {
@@ -156,7 +190,7 @@ private fun Pill(label: String, selected: Boolean, onClick: () -> Unit) {
     Box(
         modifier = Modifier
             .clip(RoundedCornerShape(20.dp))
-            .background(if (selected) PrimaryColor else SurfaceColor)
+            .background(if (selected) PrimaryColor else SurfaceElevatedColor)
             .clickable { onClick() }
             .padding(horizontal = 14.dp, vertical = 8.dp),
     ) {
@@ -165,8 +199,24 @@ private fun Pill(label: String, selected: Boolean, onClick: () -> Unit) {
 }
 
 @Composable
+private fun GoalCard(emoji: String, label: String, selected: Boolean, onClick: () -> Unit, modifier: Modifier = Modifier) {
+    Column(
+        modifier = modifier
+            .clip(RoundedCornerShape(12.dp))
+            .background(if (selected) PrimaryColor.copy(alpha = 0.16f) else SurfaceElevatedColor)
+            .clickable { onClick() }
+            .padding(vertical = 14.dp),
+        horizontalAlignment = Alignment.CenterHorizontally,
+    ) {
+        Text(emoji, style = MaterialTheme.typography.titleLarge)
+        Spacer(Modifier.height(4.dp))
+        Text(label, style = MaterialTheme.typography.labelMedium, color = if (selected) PrimaryColor else TextSecondaryColor)
+    }
+}
+
+@Composable
 private fun LabeledSlider(label: String, value: Double, range: ClosedFloatingPointRange<Double>, unit: String, onChange: (Double) -> Unit) {
-    Text("$label: ${value.roundToInt()} $unit", style = MaterialTheme.typography.titleMedium)
+    Text("$label: ${value.roundToInt()} $unit", style = MaterialTheme.typography.titleSmall, color = TextSecondaryColor)
     Slider(
         value = value.toFloat(),
         onValueChange = { onChange(it.toDouble()) },

@@ -21,14 +21,22 @@ import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.rounded.CalendarMonth
 import androidx.compose.material.icons.rounded.ReceiptLong
+import androidx.compose.material3.DatePicker
+import androidx.compose.material3.DatePickerDialog
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
+import androidx.compose.material3.rememberDatePickerState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -48,11 +56,15 @@ import com.roy.caloriebank.ui.theme.SurfaceColor
 import com.roy.caloriebank.ui.theme.TextMutedColor
 import com.roy.caloriebank.ui.theme.TextOnPrimaryColor
 import com.roy.caloriebank.ui.theme.TextSecondaryColor
+import java.time.Instant
 import java.time.LocalDate
+import java.time.ZoneId
+import java.time.ZoneOffset
+import java.time.format.DateTimeFormatter
 import java.time.format.TextStyle
 import java.util.Locale
 
-private const val DAYS_BACK = 60
+private const val DAYS_BACK = 365
 
 @Composable
 fun TransactionsScreen(viewModel: TransactionsViewModel = hiltViewModel()) {
@@ -60,17 +72,57 @@ fun TransactionsScreen(viewModel: TransactionsViewModel = hiltViewModel()) {
     val today = LocalDate.now()
     val days = remember(today) { (DAYS_BACK downTo 0).map { today.minusDays(it.toLong()) } }
     val listState = rememberLazyListState()
+    var showDatePicker by remember { mutableStateOf(false) }
 
     LaunchedEffect(Unit) {
         listState.scrollToItem(days.lastIndex)
     }
+    LaunchedEffect(uiState.selectedDate) {
+        val index = days.indexOf(uiState.selectedDate)
+        if (index >= 0) listState.animateScrollToItem(maxOf(0, index - 3))
+    }
+
+    if (showDatePicker) {
+        val datePickerState = rememberDatePickerState(
+            initialSelectedDateMillis = uiState.selectedDate.atStartOfDay(ZoneOffset.UTC).toInstant().toEpochMilli(),
+        )
+        DatePickerDialog(
+            onDismissRequest = { showDatePicker = false },
+            confirmButton = {
+                TextButton(onClick = {
+                    datePickerState.selectedDateMillis?.let { millis ->
+                        val picked = Instant.ofEpochMilli(millis).atZone(ZoneOffset.UTC).toLocalDate()
+                        viewModel.selectDate(picked)
+                    }
+                    showDatePicker = false
+                }) { Text("OK") }
+            },
+            dismissButton = {
+                TextButton(onClick = { showDatePicker = false }) { Text("Cancel") }
+            },
+        ) {
+            DatePicker(state = datePickerState)
+        }
+    }
 
     Column(modifier = Modifier.fillMaxSize()) {
-        Text(
-            "History",
-            style = MaterialTheme.typography.headlineMedium,
-            modifier = Modifier.padding(horizontal = 16.dp, vertical = 12.dp),
-        )
+        Row(
+            modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 12.dp),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            Column {
+                Text("History", style = MaterialTheme.typography.headlineMedium)
+                Text(
+                    uiState.selectedDate.format(DateTimeFormatter.ofPattern("MMMM yyyy")),
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = TextSecondaryColor,
+                )
+            }
+            IconButton(onClick = { showDatePicker = true }) {
+                Icon(Icons.Rounded.CalendarMonth, contentDescription = "Pick a date", tint = PrimaryColor)
+            }
+        }
 
         LazyRow(
             state = listState,

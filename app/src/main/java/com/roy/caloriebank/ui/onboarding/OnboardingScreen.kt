@@ -18,6 +18,10 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.ArrowBack
+import androidx.compose.material.icons.rounded.DirectionsRun
+import androidx.compose.material.icons.rounded.Flag
+import androidx.compose.material.icons.rounded.MonitorWeight
+import androidx.compose.material.icons.rounded.Person
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.LinearProgressIndicator
@@ -37,6 +41,7 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.roy.caloriebank.ui.shared.GradientButton
+import com.roy.caloriebank.ui.shared.SectionCard
 import com.roy.caloriebank.ui.theme.AccentColor
 import com.roy.caloriebank.ui.theme.CarbsColor
 import com.roy.caloriebank.ui.theme.FatColor
@@ -46,6 +51,7 @@ import com.roy.caloriebank.ui.theme.PrimaryColor
 import com.roy.caloriebank.ui.theme.PrimaryGradient
 import com.roy.caloriebank.ui.theme.ProteinColor
 import com.roy.caloriebank.ui.theme.SurfaceColor
+import com.roy.caloriebank.ui.theme.SurfaceElevatedColor
 import com.roy.caloriebank.ui.theme.TextOnPrimaryColor
 import com.roy.caloriebank.ui.theme.TextSecondaryColor
 import kotlin.math.roundToInt
@@ -131,26 +137,36 @@ fun OnboardingScreen(
 
 @Composable
 private fun PersonalInfoPage(state: OnboardingState, vm: OnboardingViewModel) {
-    Text("Personal Info", style = MaterialTheme.typography.headlineSmall, fontWeight = FontWeight.Bold)
-    Spacer(Modifier.height(16.dp))
-    OutlinedTextField(
-        value = state.name,
-        onValueChange = vm::updateName,
-        label = { Text("Full Name") },
-        modifier = Modifier.fillMaxWidth(),
+    Text("Let's get to know you", style = MaterialTheme.typography.headlineSmall, fontWeight = FontWeight.Bold)
+    Spacer(Modifier.height(4.dp))
+    Text(
+        "This helps us calculate an accurate calorie budget.",
+        style = MaterialTheme.typography.bodyMedium,
+        color = TextSecondaryColor,
     )
     Spacer(Modifier.height(20.dp))
-    Text("Age", style = MaterialTheme.typography.titleMedium)
-    Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(16.dp)) {
-        StepperButton("-") { vm.updateAge(state.age - 1) }
-        Text("${state.age}", style = MaterialTheme.typography.headlineMedium)
-        StepperButton("+") { vm.updateAge(state.age + 1) }
-    }
-    Spacer(Modifier.height(20.dp))
-    Text("Gender", style = MaterialTheme.typography.titleMedium)
-    Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-        listOf("male", "female", "other").forEach { g ->
-            PillOption(label = g.replaceFirstChar { it.uppercase() }, selected = state.gender == g) { vm.updateGender(g) }
+    SectionCard(title = "Personal Info", icon = Icons.Rounded.Person) {
+        OutlinedTextField(
+            value = state.name,
+            onValueChange = vm::updateName,
+            label = { Text("Full Name") },
+            modifier = Modifier.fillMaxWidth(),
+        )
+        Spacer(Modifier.height(20.dp))
+        Text("Age", style = MaterialTheme.typography.titleSmall, color = TextSecondaryColor)
+        Spacer(Modifier.height(8.dp))
+        Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(16.dp)) {
+            StepperButton("-") { vm.updateAge(state.age - 1) }
+            Text("${state.age}", style = MaterialTheme.typography.headlineMedium)
+            StepperButton("+") { vm.updateAge(state.age + 1) }
+        }
+        Spacer(Modifier.height(20.dp))
+        Text("Gender", style = MaterialTheme.typography.titleSmall, color = TextSecondaryColor)
+        Spacer(Modifier.height(8.dp))
+        Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+            listOf("male", "female", "other").forEach { g ->
+                PillOption(label = g.replaceFirstChar { it.uppercase() }, selected = state.gender == g) { vm.updateGender(g) }
+            }
         }
     }
 }
@@ -185,46 +201,54 @@ private fun PillOption(label: String, selected: Boolean, onClick: () -> Unit) {
 @Composable
 private fun BodyMetricsPage(state: OnboardingState, vm: OnboardingViewModel) {
     val isMetric = state.unitSystem == "metric"
-    Text("Body Metrics", style = MaterialTheme.typography.headlineSmall, fontWeight = FontWeight.Bold)
-    Spacer(Modifier.height(16.dp))
-    Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-        PillOption("Metric", isMetric) { vm.updateUnitSystem("metric") }
-        PillOption("US", !isMetric) { vm.updateUnitSystem("us") }
-    }
+    Text("Your body metrics", style = MaterialTheme.typography.headlineSmall, fontWeight = FontWeight.Bold)
+    Spacer(Modifier.height(4.dp))
+    Text(
+        "Used to estimate your metabolic rate (BMR).",
+        style = MaterialTheme.typography.bodyMedium,
+        color = TextSecondaryColor,
+    )
     Spacer(Modifier.height(20.dp))
+    SectionCard(title = "Body Metrics", icon = Icons.Rounded.MonitorWeight) {
+        Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+            PillOption("Metric", isMetric) { vm.updateUnitSystem("metric") }
+            PillOption("US", !isMetric) { vm.updateUnitSystem("us") }
+        }
+        Spacer(Modifier.height(20.dp))
 
-    MetricSlider(
-        label = "Height",
-        value = state.heightCm,
-        range = 140.0..220.0,
-        isMetric = isMetric,
-        unitMetric = "cm",
-        toDisplay = { it },
-        toUsDisplay = { cm -> cm / 2.54 },
-        onChange = vm::updateHeight,
-    )
-    Spacer(Modifier.height(20.dp))
-    MetricSlider(
-        label = "Current Weight",
-        value = state.currentWeightKg,
-        range = 40.0..200.0,
-        isMetric = isMetric,
-        unitMetric = "kg",
-        toDisplay = { it },
-        toUsDisplay = { kg -> kg * 2.20462 },
-        onChange = vm::updateCurrentWeight,
-    )
-    Spacer(Modifier.height(20.dp))
-    MetricSlider(
-        label = "Goal Weight",
-        value = state.goalWeightKg,
-        range = 40.0..200.0,
-        isMetric = isMetric,
-        unitMetric = "kg",
-        toDisplay = { it },
-        toUsDisplay = { kg -> kg * 2.20462 },
-        onChange = vm::updateGoalWeight,
-    )
+        MetricSlider(
+            label = "Height",
+            value = state.heightCm,
+            range = 140.0..220.0,
+            isMetric = isMetric,
+            unitMetric = "cm",
+            toDisplay = { it },
+            toUsDisplay = { cm -> cm / 2.54 },
+            onChange = vm::updateHeight,
+        )
+        Spacer(Modifier.height(20.dp))
+        MetricSlider(
+            label = "Current Weight",
+            value = state.currentWeightKg,
+            range = 40.0..200.0,
+            isMetric = isMetric,
+            unitMetric = "kg",
+            toDisplay = { it },
+            toUsDisplay = { kg -> kg * 2.20462 },
+            onChange = vm::updateCurrentWeight,
+        )
+        Spacer(Modifier.height(20.dp))
+        MetricSlider(
+            label = "Goal Weight",
+            value = state.goalWeightKg,
+            range = 40.0..200.0,
+            isMetric = isMetric,
+            unitMetric = "kg",
+            toDisplay = { it },
+            toUsDisplay = { kg -> kg * 2.20462 },
+            onChange = vm::updateGoalWeight,
+        )
+    }
 }
 
 @Composable
@@ -251,40 +275,49 @@ private fun MetricSlider(
 
 @Composable
 private fun GoalPage(state: OnboardingState, vm: OnboardingViewModel) {
-    Text("Goal", style = MaterialTheme.typography.headlineSmall, fontWeight = FontWeight.Bold)
-    Spacer(Modifier.height(16.dp))
-    goals.forEach { (value, label, subtitle) ->
-        val selected = state.goal == value
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(vertical = 6.dp)
-                .clip(RoundedCornerShape(12.dp))
-                .background(if (selected) PrimaryColor.copy(alpha = 0.2f) else SurfaceColor)
-                .clickable { vm.updateGoal(value) }
-                .padding(16.dp),
-            verticalAlignment = Alignment.CenterVertically,
-        ) {
-            Column {
-                Text(label, style = MaterialTheme.typography.titleMedium)
-                Text(subtitle, style = MaterialTheme.typography.bodySmall, color = TextSecondaryColor)
+    Text("What's your goal?", style = MaterialTheme.typography.headlineSmall, fontWeight = FontWeight.Bold)
+    Spacer(Modifier.height(4.dp))
+    Text(
+        "We'll tune your daily budget around this.",
+        style = MaterialTheme.typography.bodyMedium,
+        color = TextSecondaryColor,
+    )
+    Spacer(Modifier.height(20.dp))
+    SectionCard(title = "Goal", icon = Icons.Rounded.Flag) {
+        goals.forEach { (value, label, subtitle) ->
+            val selected = state.goal == value
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(vertical = 6.dp)
+                    .clip(RoundedCornerShape(12.dp))
+                    .background(if (selected) PrimaryColor.copy(alpha = 0.16f) else SurfaceElevatedColor)
+                    .clickable { vm.updateGoal(value) }
+                    .padding(16.dp),
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
+                Column {
+                    Text(label, style = MaterialTheme.typography.titleMedium, color = if (selected) PrimaryColor else MaterialTheme.colorScheme.onSurface)
+                    Text(subtitle, style = MaterialTheme.typography.bodySmall, color = TextSecondaryColor)
+                }
             }
         }
     }
-    Spacer(Modifier.height(20.dp))
-    Text("Activity Level", style = MaterialTheme.typography.titleMedium)
-    activityLevels.forEach { (value, label) ->
-        val selected = state.activityLevel == value
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(vertical = 4.dp)
-                .clip(RoundedCornerShape(12.dp))
-                .background(if (selected) AccentColor.copy(alpha = 0.2f) else SurfaceColor)
-                .clickable { vm.updateActivityLevel(value) }
-                .padding(14.dp),
-        ) {
-            Text(label, style = MaterialTheme.typography.bodyMedium)
+    Spacer(Modifier.height(16.dp))
+    SectionCard(title = "Activity Level", icon = Icons.Rounded.DirectionsRun) {
+        activityLevels.forEach { (value, label) ->
+            val selected = state.activityLevel == value
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(vertical = 4.dp)
+                    .clip(RoundedCornerShape(12.dp))
+                    .background(if (selected) AccentColor.copy(alpha = 0.16f) else SurfaceElevatedColor)
+                    .clickable { vm.updateActivityLevel(value) }
+                    .padding(14.dp),
+            ) {
+                Text(label, style = MaterialTheme.typography.bodyMedium, color = if (selected) AccentColor else MaterialTheme.colorScheme.onSurface)
+            }
         }
     }
 }

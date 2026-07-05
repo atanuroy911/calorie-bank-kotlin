@@ -33,6 +33,7 @@ import androidx.compose.ui.unit.dp
 import com.roy.caloriebank.ui.theme.AppShapes
 import com.roy.caloriebank.ui.theme.BackgroundColor
 import com.roy.caloriebank.ui.theme.PrimaryColor
+import com.roy.caloriebank.ui.theme.SurfaceColor
 import com.roy.caloriebank.ui.theme.PrimaryGradient
 import com.roy.caloriebank.ui.theme.SurfaceElevatedColor
 import com.roy.caloriebank.ui.theme.TextMutedColor
@@ -137,6 +138,31 @@ fun SectionHeader(
                 modifier = Modifier.clickable(enabled = onActionClick != null) { onActionClick?.invoke() },
             )
         }
+    }
+}
+
+/** A titled, icon-labeled card used to group a chunk of a form (Edit Profile, Onboarding) —
+ * keeps long forms from reading as one undifferentiated wall of fields. */
+@Composable
+fun SectionCard(
+    title: String,
+    icon: androidx.compose.ui.graphics.vector.ImageVector,
+    modifier: Modifier = Modifier,
+    content: @Composable () -> Unit,
+) {
+    Column(
+        modifier = modifier
+            .fillMaxWidth()
+            .clip(RoundedCornerShape(16.dp))
+            .background(SurfaceColor)
+            .padding(16.dp),
+    ) {
+        Row(verticalAlignment = Alignment.CenterVertically) {
+            Icon(icon, contentDescription = null, tint = PrimaryColor, modifier = Modifier.size(20.dp))
+            Text(title, style = MaterialTheme.typography.titleMedium, modifier = Modifier.padding(start = 8.dp))
+        }
+        androidx.compose.foundation.layout.Spacer(Modifier.height(12.dp))
+        content()
     }
 }
 
