@@ -6,6 +6,16 @@ plugins {
     alias(libs.plugins.kotlin.serialization)
 }
 
+// Single source of truth for the app's semantic version (semver.org: MAJOR.MINOR.PATCH).
+// Bump MAJOR for breaking/incompatible changes, MINOR for backward-compatible features,
+// PATCH for backward-compatible fixes. versionCode is derived so every semver bump also
+// produces a strictly increasing Play Store version code.
+val appVersionMajor = 1
+val appVersionMinor = 1
+val appVersionPatch = 0
+val appVersionName = "$appVersionMajor.$appVersionMinor.$appVersionPatch"
+val appVersionCode = appVersionMajor * 10_000 + appVersionMinor * 100 + appVersionPatch
+
 android {
     namespace = "com.roy.caloriebank"
     compileSdk = 37
@@ -14,8 +24,8 @@ android {
         applicationId = "com.roy.caloriebank"
         minSdk = 29
         targetSdk = 37
-        versionCode = 1
-        versionName = "1.0"
+        versionCode = appVersionCode
+        versionName = appVersionName
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
