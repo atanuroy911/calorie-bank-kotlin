@@ -6,6 +6,7 @@ import com.roy.caloriebank.data.local.BankAccountDao
 import com.roy.caloriebank.data.local.CalorieBankDatabase
 import com.roy.caloriebank.data.local.CalorieTransactionDao
 import com.roy.caloriebank.data.local.DailySummaryDao
+import com.roy.caloriebank.data.local.FoodCatalogDao
 import com.roy.caloriebank.data.local.FoodEntryDao
 import com.roy.caloriebank.data.local.UserProfileDao
 import dagger.Module
@@ -22,7 +23,10 @@ object DatabaseModule {
     @Provides
     @Singleton
     fun provideDatabase(@ApplicationContext context: Context): CalorieBankDatabase =
-        Room.databaseBuilder(context, CalorieBankDatabase::class.java, "calorie_bank.db").build()
+        Room.databaseBuilder(context, CalorieBankDatabase::class.java, "calorie_bank.db")
+            // No real users on old schema versions yet — destructive migration is fine for now.
+            .fallbackToDestructiveMigration(dropAllTables = true)
+            .build()
 
     @Provides
     fun provideUserProfileDao(db: CalorieBankDatabase): UserProfileDao = db.userProfileDao()
@@ -38,4 +42,7 @@ object DatabaseModule {
 
     @Provides
     fun provideDailySummaryDao(db: CalorieBankDatabase): DailySummaryDao = db.dailySummaryDao()
+
+    @Provides
+    fun provideFoodCatalogDao(db: CalorieBankDatabase): FoodCatalogDao = db.foodCatalogDao()
 }

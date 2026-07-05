@@ -2,7 +2,9 @@ package com.roy.caloriebank.ui.manualentry
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.roy.caloriebank.data.local.FoodCatalogEntity
 import com.roy.caloriebank.data.local.PreferencesRepository
+import com.roy.caloriebank.data.repository.FoodCatalogRepository
 import com.roy.caloriebank.domain.model.BankAccount
 import com.roy.caloriebank.domain.model.CalorieTransaction
 import com.roy.caloriebank.domain.model.FoodEntry
@@ -19,6 +21,8 @@ import java.time.Instant
 import java.time.ZoneId
 import java.util.UUID
 import javax.inject.Inject
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -35,10 +39,46 @@ class ManualFoodEntryViewModel @Inject constructor(
     private val transactionRepository: TransactionRepository,
     private val dailySummaryRepository: DailySummaryRepository,
     private val userProfileRepository: UserProfileRepository,
+    private val foodCatalogRepository: FoodCatalogRepository,
 ) : ViewModel() {
 
     private val _isSaving = MutableStateFlow(false)
     val isSaving: StateFlow<Boolean> = _isSaving.asStateFlow()
+
+    private val _suggestions = MutableStateFlow<List<FoodCatalogEntity>>(emptyList())
+    val suggestions: StateFlow<List<FoodCatalogEntity>> = _suggestions.asStateFlow()
+
+    private val _isSearchingRemote = MutableStateFlow(false)
+    val isSearchingRemote: StateFlow<Boolean> = _isSearchingRemote.asStateFlow()
+
+    private var searchJob: Job? = null
+
+    init {
+        viewModelScope.launch {
+            foodCatalogRepository.seedIfNeeded()
+            _suggestions.value = foodCatalogRepository.getRecentFoods()
+        }
+    }
+
+    /** Local (instant) matches show immediately; if there are few of them, a debounced,
+     * rate-limited Open Food Facts lookup fills in the rest a moment later. */
+    fun onQueryChanged(query: String) {
+        searchJob?.cancel()
+        searchJob = viewModelScope.launch {
+            val local = foodCatalogRepository.searchLocal(query)
+            _suggestions.value = local
+            if (query.isBlank() || local.size >= 8) return@launch
+
+            delay(500) // debounce so we don't fire a network call per keystroke
+            _isSearchingRemote.value = true
+            val remote = foodCatalogRepository.searchOpenFoodFacts(query)
+            _isSearchingRemote.value = false
+            if (remote != null) {
+                val existingNames = local.map { it.name }.toSet()
+                _suggestions.value = local + remote.filterNot { it.name in existingNames }
+            }
+        }
+    }
 
     fun save(
         mealType: String,
@@ -111,6 +151,14 @@ class ManualFoodEntryViewModel @Inject constructor(
                         ),
                     )
                 }
+                foodCatalogRepository.recordUsage(
+                    name = name,
+                    servingDescription = quantity.ifBlank { "1 serving" },
+                    calories = calories,
+                    proteinG = proteinG,
+                    carbsG = carbsG,
+                    fatG = fatG,
+                )
                 onResult(true, null)
             } catch (e: Exception) {
                 onResult(false, e.message ?: "Failed to save")

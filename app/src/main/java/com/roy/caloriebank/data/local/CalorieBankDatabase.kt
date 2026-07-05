@@ -11,8 +11,9 @@ import androidx.room.TypeConverters
         CalorieTransactionEntity::class,
         BankAccountEntity::class,
         DailySummaryEntity::class,
+        FoodCatalogEntity::class,
     ],
-    version = 1,
+    version = 2,
     exportSchema = false,
 )
 @TypeConverters(Converters::class)
@@ -22,4 +23,5 @@ abstract class CalorieBankDatabase : RoomDatabase() {
     abstract fun calorieTransactionDao(): CalorieTransactionDao
     abstract fun bankAccountDao(): BankAccountDao
     abstract fun dailySummaryDao(): DailySummaryDao
+    abstract fun foodCatalogDao(): FoodCatalogDao
 }
